@@ -9,10 +9,10 @@ namespace AspFromScratch {
 
     public delegate Task HttpDelegate(HttpListenerContext context, Dictionary<string, object> data);
 
-    public class MiddlewareBuilder {
+    public class PipelineBuilder {
         private readonly Stack<Type> items = new Stack<Type>();
         private HttpDelegate firstMiddleware;
-        public MiddlewareBuilder Use<T>() where T : IMiddleware {
+        public PipelineBuilder Use<T>() where T : IMiddleware {
             Guard.Against.TypeWithoutConstructorForTypes<T>(typeof(HttpDelegate));
             this.items.Push(typeof(T));
             return this;

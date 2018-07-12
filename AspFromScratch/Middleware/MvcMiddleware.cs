@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using Autofac;
 
 namespace AspFromScratch.Middleware {
     public class MvcMiddleware : IMiddleware {
@@ -17,14 +18,14 @@ namespace AspFromScratch.Middleware {
         public async Task InvokeAsync(HttpListenerContext context, Dictionary<string, object> data) {
             var streamWriter = new StreamWriter(context.Response.OutputStream);
             var streamReader = new StreamReader(context.Request.InputStream);
-            var url = context.Request.Url;
+            var url = context.Request.RawUrl;
             var method = context.Request.HttpMethod;
 
             try {
-                var segments = url.Segments.ToArray();
+                var parts = url.Split('/');
 
-                var controllerName = segments[1].Split('/')[0];
-                var actionName = segments[2].Split('/')[0];
+                var controllerName = parts[1];
+                var actionName = parts[2];
 
                 var controllerType = Assembly.GetExecutingAssembly().GetTypes().FirstOrDefault(t => {
                     return t.Name.ToUpper() == $"{controllerName.ToUpper()}CONTROLLER";
@@ -32,7 +33,8 @@ namespace AspFromScratch.Middleware {
                 var actionInfo = controllerType.GetMethods().FirstOrDefault(m => {
                     return m.Name.ToUpper() == actionName.ToUpper() && m.GetCustomAttribute<HttpMethodAttribute>()?.Method?.ToUpper() == method.ToUpper();
                 });
-                var controllerInstance = Activator.CreateInstance(controllerType);
+                // создаем контроллер не через активатор а через автофак
+                var controllerInstance = WebServer.Services.Resolve(controllerType);
 
                 object[] args = null;
                 if (actionInfo.GetParameters().Count() > 0) {
@@ -61,9 +63,8 @@ namespace AspFromScratch.Middleware {
                 streamWriter.Write("<p>Failed to handle request.</p>");
                 Console.WriteLine("Failed to handle request");
             } finally {
-                streamWriter.Close();
+
             }
-            // await next.Invoke(context, data);
         }
     }
 }

@@ -1,26 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Text;
+using AspFromScratch.Services;
+using System.Linq;
 
 namespace AspFromScratch.Controllers {
-    class UsersController {
-        static List<string> users = new List<string> {
-                "Alex",
-                "Laman",
-                "Tural",
-                "Ramin",
-                "Samir",
-                "Fuad",
-                "Nadir",
-                "Ismayil",
-                "Iqor",
-                "Mirza",
-                "Namiq",
-                "Tabriz",
-                "Bunnyaminarmynow"
-            };
+    public class UsersController {
+        private readonly IDataService dataService;
+
+        public UsersController(IDataService dataService) {
+            this.dataService = dataService;
+        }
 
         [HttpMethod("GET")]
         public string Index() {
+            var names = this.dataService.GetNames().ToArray();
+
             var htmlContent = new StringBuilder()
                 .AppendLine("<!DOCTYPE html>")
                 .AppendLine("<html>")
@@ -38,9 +32,9 @@ namespace AspFromScratch.Controllers {
                 .AppendLine("   </form>")
                 .AppendLine("   <table>")
                 .AppendLine("       <tr><td>ID</td><td>Name</td></tr>");
-            for (int i = 0; i < users.Count; ++i) {
+            for (int i = 0; i < names.Length; ++i) {
                 htmlContent
-                    .AppendLine($"      <tr><td>{i}</td><td>{users[i]}</td></tr>");
+                    .AppendLine($"      <tr><td>{i}</td><td>{names[i]}</td></tr>");
             }
             htmlContent
                 .AppendLine("   </table>")
@@ -52,7 +46,8 @@ namespace AspFromScratch.Controllers {
 
         [HttpMethod("Post")]
         public string Create(string name) {
-            users.Add(name);
+            this.dataService.AddName(name);
+            var names = this.dataService.GetNames().ToArray();
 
             var htmlContent = new StringBuilder()
                 .AppendLine("<!DOCTYPE html>")
@@ -71,9 +66,9 @@ namespace AspFromScratch.Controllers {
                 .AppendLine("   </form>")
                 .AppendLine("   <table>")
                .AppendLine("       <tr><td>ID</td><td>Name</td></tr>");
-            for (int i = 0; i < users.Count; ++i) {
+            for (int i = 0; i < names.Length; ++i) {
                 htmlContent
-                    .AppendLine($"      <tr><td>{i}</td><td>{users[i]}</td></tr>");
+                    .AppendLine($"      <tr><td>{i}</td><td>{names[i]}</td></tr>");
             }
             htmlContent
                 .AppendLine("   </table>")
