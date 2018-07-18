@@ -27,6 +27,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -47,6 +48,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Ardalis.GuardClauses, Version=1.2.3.0, Culture=neutral, processorArchitecture=MSIL">
@@ -181,14 +185,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionResults\HtmlResult.cs" />
+    <Compile Include="ActionResults\IActionResult.cs" />
+    <Compile Include="ActionResults\JsonResult.cs" />
+    <Compile Include="ActionResults\TextResult.cs" />
     <Compile Include="Controllers\UsersController.cs" />
     <Compile Include="Guards\GuardConditionExtensionMethods.cs" />
     <Compile Include="HttpMethodAttribute.cs" />
     <Compile Include="IConfigurator.cs" />
     <Compile Include="IMiddleware.cs" />
     <Compile Include="Middleware.cs" />
-    <Compile Include="Middleware\ControllersCollection.cs" />
     <Compile Include="Middleware\MvcMiddleware.cs" />
+    <Compile Include="Middleware\StaticFileMiddleware.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\FakeDataService.cs" />
@@ -212,5 +220,14 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <Content Include="wwwroot\favicon.png" />
+    <Content Include="wwwroot\index.html" />
+    <Content Include="wwwroot\script.js" />
+    <Content Include="wwwroot\style.css" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>robocopy "$(ProjectDir)wwwroot" "$(ProjectDir)$(OutDir)wwwroot" /MIR</PostBuildEvent>
+  </PropertyGroup>
 </Project>

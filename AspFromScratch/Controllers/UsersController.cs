@@ -2,6 +2,7 @@
 using System.Text;
 using AspFromScratch.Services;
 using System.Linq;
+using System.IO;
 
 namespace AspFromScratch.Controllers {
     public class UsersController {
@@ -65,10 +66,10 @@ namespace AspFromScratch.Controllers {
                 .AppendLine("       <button type='submit'>create</button>")
                 .AppendLine("   </form>")
                 .AppendLine("   <table>")
-               .AppendLine("       <tr><td>ID</td><td>Name</td></tr>");
+               .AppendLine($"       <tr><td>ID</td><td>Name</td></tr>");
+
             for (int i = 0; i < names.Length; ++i) {
-                htmlContent
-                    .AppendLine($"      <tr><td>{i}</td><td>{names[i]}</td></tr>");
+                htmlContent.AppendLine($"      <tr><td>{i}</td><td>{names[i]}</td></tr>");
             }
             htmlContent
                 .AppendLine("   </table>")

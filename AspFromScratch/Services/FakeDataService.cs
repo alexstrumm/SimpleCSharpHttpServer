@@ -8,8 +8,8 @@ namespace AspFromScratch.Services {
     public class FakeDataService : IDataService {
         static List<string> names = new List<string> {
                 "Alex",
-                "Laman",
                 "Tural",
+                "Laman",
                 "Ramin",
                 "Fuad",
                 "Nadir",

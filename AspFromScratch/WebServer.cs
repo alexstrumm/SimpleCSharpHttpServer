@@ -4,23 +4,14 @@ using System.Net;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 using Autofac;
-using Autofac.Core;
 using Autofac.Features.ResolveAnything;
 using Serilog;
-using Serilog.Core;
 using Serilog.Events;
-using Serilog.Sinks.SystemConsole;
-using Unity;
 
 namespace AspFromScratch {
     public class WebServer {
         private readonly HttpListener listener;
-        // автофаковый контейнер зависимостей, хранит все зарегистрированные сервисы
-        // синглтон для того, чтобы можно было резолвить сервисы из любого мидлвейра
-        // по хорошему, конечно, стоило бы его в мидлвейры передавать при их создании
-        // чтобы только мидлвейры имели доступ к нему, но так проще
         public static IContainer Services { get; private set; }
-        // метод первого мидлвейра в пайплайне
         private HttpDelegate pipelineStarter;
         private ILogger logger;
 
@@ -37,22 +28,15 @@ namespace AspFromScratch {
         public WebServer Configure<T>() where T : IConfigurator, new() {
             this.logger = Log.Logger = new LoggerConfiguration().WriteTo.Console(LogEventLevel.Information).CreateLogger();
 
-            var configurer = new T();
-            // создаем билдер контейнера зависимостей автофака
-            var builder = new ContainerBuilder();
-            // этот регистерсорс нужен для того, чтобы можно было резолвить через автофак
-            // даже те типы, которые не были зарегистрированы
-            // автофак сам найдет реализацию каждого интерфейса из параметров конструктора
-            // если они, конечно, были зарегистрированы
-            builder.RegisterSource(new AnyConcreteTypeNotAlreadyRegisteredSource());
-            // передаем билдер в метод конфигуратора, тот добавляет свои зависимости в билдер
-            configurer.ConfigureServices(builder);
-            // строим контейнер, который будет содержать все зависимости приложения
-            Services = builder.Build();
+
+            var configurer = new T(); // new Configurer
+            var builder = new ContainerBuilder(); // Autofac
+            builder.RegisterSource(
+                new AnyConcreteTypeNotAlreadyRegisteredSource());        
+            configurer.ConfigureServices(builder); 
+            Services = builder.Build(); // Container
             var middlewareBuilder = new PipelineBuilder();
-            // аналогично, передаем конфигуратору билдер пайплайна мидлвейров
             configurer.ConfigureMiddleware(middlewareBuilder);
-            // билдим, получаем готовый пайплайн и ссылку на метод первого мидлвейра
             this.pipelineStarter = middlewareBuilder.Build();
 
             return this;
@@ -67,10 +51,9 @@ namespace AspFromScratch {
             Log.Logger.Information($"Listening on {this.listener.Prefixes.First()}.");
 
             while (true) {
-                // приходит запрос
                 var context = this.listener.GetContext();
-                // отдаем его первому мидлвейру
-                Task.Run(() => HandleRequest(context));
+                Task.Run(() => HandleRequest(context)).Wait();
+
             }
         }
 

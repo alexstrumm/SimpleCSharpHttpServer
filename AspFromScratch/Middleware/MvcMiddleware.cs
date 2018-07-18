@@ -33,7 +33,6 @@ namespace AspFromScratch.Middleware {
                 var actionInfo = controllerType.GetMethods().FirstOrDefault(m => {
                     return m.Name.ToUpper() == actionName.ToUpper() && m.GetCustomAttribute<HttpMethodAttribute>()?.Method?.ToUpper() == method.ToUpper();
                 });
-                // создаем контроллер не через активатор а через автофак
                 var controllerInstance = WebServer.Services.Resolve(controllerType);
 
                 object[] args = null;
@@ -57,13 +56,14 @@ namespace AspFromScratch.Middleware {
                 context.Response.ContentType = "text/html";
                 context.Response.StatusCode = 200;
                 streamWriter.Write(result);
+                streamWriter.Close(); // i was fucked up
             } catch (Exception ex) {
                 context.Response.StatusCode = 400;
                 context.Response.StatusDescription = "Failed to handle request.";
                 streamWriter.Write("<p>Failed to handle request.</p>");
                 Console.WriteLine("Failed to handle request");
             } finally {
-
+                context.Response.Close();
             }
         }
     }

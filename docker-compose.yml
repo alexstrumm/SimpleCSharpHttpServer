@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  aspfromscratch:
+    image: ${DOCKER_REGISTRY}aspfromscratch
+    build:
+      context: .\AspFromScratch
+      dockerfile: Dockerfile
